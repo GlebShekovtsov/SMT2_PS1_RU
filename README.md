@@ -1,2 +1,13 @@
-# SMT2_PS1_RU
-Russian fan-translation toolkit and alpha patch for Shin Megami Tensei II (PS1, SLPM-86924). No game data included.
+# Shin Megami Tensei II (PS1) — Русский перевод [Alpha]
+
+Фанатский перевод **Shin Megami Tensei II** для PlayStation 1 (SLPM-86924, Rev 1) на русский язык.  
+Форк инструментария английского перевода [Roman215/smt2-psx-translation](https://github.com/Roman215/smt2-psx-translation).
+
+> **Статус: ранняя альфа-версия (0.1.0-alpha)**  
+> Переведены текстовые банки, меню, системные строки, основная графика интерфейсов и титры роликов, но **полное игровое прохождение и финальная литературная редактура ещё не выполнены**. Возможны опечатки, несогласованные падежи и непроверенные ветки в переговорах с демонами.
+
+## Скачать патч
+
+Готовый .xdelta-патч и инструкция находятся в разделе **[Releases](https://github.com/GlebShekovtsov/SMT2_PS1_RU/releases/tag/v0.1.0-alpha)**.
+
+Репозиторий не содержит игровых данных и образов. Для применения патча требуется собственный образ **Shin Megami Tensei II (Japan) (Rev 1)** (MODE2/2352, 222 694 416 байт, SHA-256 c86fed4d6cefd676fe9c707f099f3fcc97c64b0ee1220ac5b3a47f1a6e2f1235).
