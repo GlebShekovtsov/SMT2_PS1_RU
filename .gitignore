@@ -1,0 +1,32 @@
+*.bin
+*.xdelta
+*.state*
+*.sstate*
+*.str
+*.exe
+Extracted/
+*.cue
+*.pyc
+__pycache__/
+build/
+SMT2_full_script.txt
+SMT2_system_strings.txt
+
+# emulator save states and repair-tool output
+*.sav
+*.mp4
+fixed/
+devtools/emu/cores/
+devtools/emu/system/
+
+# Local translation dependencies, model weights, generated drafts and packages
+localization/vendor/
+localization/models/
+localization/draft_cache.json
+localization/review_queue.tsv
+localization/graphics_review/
+localization/graphics_ru/review/
+localization/full_review_2026-11-01/ledger.json
+text/
+*.log
+dist/
