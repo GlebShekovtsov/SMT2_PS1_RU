@@ -477,13 +477,60 @@ def patch_omake(source):
         if index not in {0, 6, 8, 41, 42, 43}
     ]
     races.reverse()
-    slots = _aligned_slots(buf, 0x000, len(races), 0x144, label="OMAKE.BIN races")
-    if slots[0][2] != "ウイルス" or slots[-1][2] != "大天使":
+    demons = list(reversed(NT.DEMONS[:255]))
+
+    race_slots = _aligned_slots(buf, 0x000, len(races), 0x144, label="OMAKE.BIN races")
+    if race_slots[0][2] != "ウイルス" or race_slots[-1][2] != "大天使":
         raise SystemExit("OMAKE.BIN races: unexpected table order")
-    _slots, race_offsets = _repack_table(
-        buf, 0x000, len(races), 0x144, races, label="OMAKE.BIN races"
+    demon_slots = _aligned_slots(buf, 0x144, len(demons), 0xDDC, label="OMAKE.BIN demons")
+    if demon_slots[0][2] != "メビウス" or demon_slots[-1][2] != "サタン":
+        raise SystemExit("OMAKE.BIN demons: unexpected demon-table order")
+
+    _verify_pointer_coverage(
+        buf, 0x000, 0x144, [pos for pos, _gap, _jp in race_slots], label="OMAKE.BIN races"
     )
-    _patch_demon_table(buf, 0x144, 0xDDC, label="OMAKE.BIN demons")
+    _verify_pointer_coverage(
+        buf, 0x144, 0xDDC, [pos for pos, _gap, _jp in demon_slots], label="OMAKE.BIN demons"
+    )
+
+    # Repack races and demons into the shared 0x000..0xDDC pool so expanded
+    # race names can use the slack at the end of the demon string table.
+    blob = bytearray()
+    race_offsets = []
+    for text in races:
+        race_offsets.append(len(blob))
+        blob += _ascii(text)
+        blob += bytes((-len(blob)) & 3)
+    demons_start = len(blob)
+    demon_offsets = []
+    for text in demons:
+        demon_offsets.append(len(blob))
+        blob += _ascii(text)
+        blob += bytes((-len(blob)) & 3)
+
+    from capacity import capacity   # RU fork: capacity bookkeeping
+    capacity("OMAKE.BIN races", demons_start, max(demons_start, 0x144))
+    if capacity("OMAKE.BIN demons", len(blob) - demons_start, 0xDDC - demons_start):
+        blob = blob[:0xDDC]
+
+    pointer_map = {
+        OVERLAY_BASE + old_off: OVERLAY_BASE + new_off
+        for (old_off, _gap, _jp), new_off in zip(race_slots, race_offsets)
+    }
+    pointer_map.update({
+        OVERLAY_BASE + old_off: OVERLAY_BASE + new_off
+        for (old_off, _gap, _jp), new_off in zip(demon_slots, demon_offsets)
+    })
+    buf[0x000:0xDDC] = blob + bytes(0xDDC - len(blob))
+
+    for off in range(0, len(buf) - 3, 4):
+        if 0x000 <= off < 0xDDC:
+            continue
+        old_pointer = struct.unpack_from("<I", buf, off)[0]
+        new_pointer = pointer_map.get(old_pointer)
+        if new_pointer is not None:
+            struct.pack_into("<I", buf, off, new_pointer)
+
     if WIDTHS10 is not None:
         _patch_omake_plate(buf, races, race_offsets)
         if ENHANCEMENTS:
